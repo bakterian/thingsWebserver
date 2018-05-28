@@ -1,0 +1,89 @@
+<html>
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+<style>
+    body 
+    {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 20px;
+        margin-top: 20px;
+        margin-left: 10px;
+        width: 1100px;
+        text-align: center;
+        border: none;
+    }
+
+    #WebsiteName {
+        border-radius: 20px;
+        background-color: #45a049;
+        color: white;
+        padding-top: 6px;
+        padding-bottom: 6px;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin: 10px;
+        border: none;
+        width:auto;
+        text-align: center;
+    }
+
+    h1
+    {
+        margin: 0px;
+        background-color: #999;
+        color: white;
+        border: none;
+        width:auto;
+        text-align: center;
+        font-size: 20px;
+        padding: 10px;
+        border-radius: 30px;
+        margin-left: 40px;
+        margin-right: 40px;
+    }
+
+    #Rohr, #LightSensingNodeOut
+    {
+        margin: 10px;
+        border:10px solid #bdbdbd;
+        border-radius: 10px;
+        padding: 10px;
+        margin-left: 40px;
+        margin-right: 40px;
+        text-align: center;
+    }
+
+    canvas
+    {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+
+</style>
+
+<body>
+    <div id="TitleSection">
+        <h2 id="WebsiteName">Things Webserver</h2>
+    </div>
+    <br><br>
+    <div class="LiveDataSection">
+        <h1>Wemos D1 Mini (indoor measurment)</h1>
+        <div id="LightSensingNodeOut">
+            <canvas id="reading1"> </canvas>
+            <canvas id="reading2"> </canvas>
+            <canvas id="reading3"> </canvas>      
+        </div>
+        <br><br>
+        <h1>AirRohr Esp Node (outdoor measurment)</h1>
+        <div id="Rohr">
+            <canvas id="RohrReading1"> </canvas>
+            <canvas id="RohrReading2"> </canvas>
+            <canvas id="RohrReading3"> </canvas>
+            <canvas id="RohrReading4"> </canvas>
+            <canvas id="RohrReading5"> </canvas>
+            <canvas id="RohrReading6"> </canvas>                  
+        </div>
+    </div>  
+    <script src="app.js"></script>
+</body>
+</html>
