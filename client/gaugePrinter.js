@@ -1,5 +1,6 @@
 // ============================ RESOURCES ================================
 var config = require('../../CONFIG/thingsWebserverConfig'); //needs adjusting
+var configUtil = require('./configUtil');
 var gauges = require('./gaugeFactory');
 var $ = require('jquery');
 // =======================================================================
@@ -10,27 +11,6 @@ var activeGauges = [];
 // =======================================================================
 
 // ============================ FUNCITONS ================================
-
-function getDistinctTopics()
-{
-    var topics = [];
-
-    config.readings.forEach(reading => 
-    {
-        var foundEntry = false;
-        topics.forEach(topic => { 
-        if((topic  === reading.mqttTopic)) foundEntry=true;
-        });
-
-        if(!foundEntry)
-        {
-            topics.push(reading.mqttTopic);
-        }
-    });
-
-    return topics;
-}
-
 function addDistinctCanvasIds(mqttTopic,newCanavasIds)
 {
     var latestCanvasIds = [];
@@ -69,7 +49,7 @@ function resetCanvasIdIterators()
     canvasIds.forEach(canvasId => { canvasId.iterator = 0;});
 }
 
-var configTopics = getDistinctTopics();
+var configTopics = configUtil.getTopics(config);
 configTopics.forEach(topic => 
 { 
     console.log("adding canvas ids for topic: "+ topic);
