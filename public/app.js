@@ -513,6 +513,7 @@ var gaugePrinter = require('./gaugePrinter');
 
 // ============================ GLOBALS ==================================
 var mqttClient = mqtt.connect(config.thingsBroker.url,config.thingsBroker.options);
+var subscribed = false;
 // =======================================================================
 
 gaugePrinter.DrawGauges(); 
@@ -538,7 +539,7 @@ function subsribeToTopics()
                 errorRet = false;
                 console.log("Subscription granted for topic: " + grantedElement.topic);
             });
-            if(errorRet) console.log("Subscription error: " + error.toString());
+            if(errorRet) console.log("Subscription error: " + error);
         });
     });
 }
@@ -546,7 +547,11 @@ function subsribeToTopics()
 mqttClient.on('connect', function()
 {
 	console.log("Connected to Mqtt Broker");
-	subsribeToTopics();
+	if(subscribed != true)
+	{
+		subsribeToTopics();
+		subscribed = true;
+	}
 });
 
 mqttClient.on('message', function (topic, message)
