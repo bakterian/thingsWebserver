@@ -1,12 +1,12 @@
 // ============================ RESOURCES ================================
 var mqtt = require('mqtt');
 var config = require('../../CONFIG/thingsWebserverConfig'); //Needs adjustting
+var configUtil = require('./configUtil');
 var gaugePrinter = require('./gaugePrinter');
 // =======================================================================
 
 // ============================ GLOBALS ==================================
 var mqttClient = mqtt.connect(config.thingsBroker.url,config.thingsBroker.options);
-var subscribed = false;
 // =======================================================================
 
 gaugePrinter.DrawGauges(); 
@@ -22,21 +22,25 @@ function updateGauge(topic,mqttData)
 
 function subsribeToTopics()
 {
-	for (var i in config.thingTopics)
-	{
-		mqttClient.subscribe(config.thingTopics[i]);
-	};
+    var mqttTopics = configUtil.getTopics(config);
+
+    mqttTopics.forEach(topicName => {
+        mqttClient.subscribe(topicName, function(error,granted)
+        {
+            var errorRet = true;
+            granted.forEach(grantedElement => {
+                errorRet = false;
+                console.log("Subscription granted for topic: " + grantedElement.topic);
+            });
+            if(errorRet) console.log("Subscription error: " + error.toString());
+        });
+    });
 }
 
 mqttClient.on('connect', function()
 {
 	console.log("Connected to Mqtt Broker");
-	if(subscribed != true)
-	{
-		subsribeToTopics();
-		subscribed = true;
-		console.log("Subsriptions are done");
-	}
+	subsribeToTopics();
 });
 
 mqttClient.on('message', function (topic, message)
