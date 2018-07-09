@@ -106,26 +106,26 @@ var lightGauge = {
     units: "lx",
     title: "Light",
     minValue: 0,
-    maxValue: 1000,
+    maxValue: 60000,
     majorTicks: [
         "0",
-        "100",
-        "200",
-        "300",
-        "400",
-        "500",
-        "600",
-        "700",
-        "800",
-        "900",
-        "1000"
+        "6000",
+        "12000",
+        "18000",
+        "24000",
+        "30000",
+        "36000",
+        "42000",
+        "48000",
+        "54000",
+        "60000"
     ],
     minorTicks: 2,
     strokeTicks: true,
     highlights: [
         {
             "from": 0,
-            "to": 1000,
+            "to": 60000,
             "color": "rgba(164, 195, 26, 0.75)"
         }    
     ],
