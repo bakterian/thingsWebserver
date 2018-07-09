@@ -1,5 +1,7 @@
 <html>
 <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+<!-- <script src="../node_modules/chart.js/dist/Chart.js"></script>
+<script src="../chartjs-plugin-zoom.js"></script> -->
 <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 <style>
     body 
@@ -42,7 +44,7 @@
         margin-right: 40px;
     }
 
-    #Rohr, #LightSensingNodeOut
+    #Rohr, #LightSensingNodeOut, #AirRohrHist, #WemosD1Hist
     {
         margin: 10px;
         border:10px solid #bdbdbd;
@@ -59,6 +61,25 @@
         padding-right: 40px;
     }
 
+    .chartjs-render-monitor 
+    {
+        -webkit-animation: chartjs-render-animation 0.001s;
+        animation: chartjs-render-animation 0.001s;
+        display: block;
+        width: 900px;
+        height: 490px;
+        padding-left: 0px;
+        padding-right: 0px;
+        margin-top: 15px;
+    }
+    #LightSensingNodeOutTimestamp, #RohrTimestamp
+    {
+        text-align: right;
+        color: grey;
+        margin: 0px;
+        font-size: 16;
+    }       
+
 </style>
 
 <body>
@@ -67,23 +88,28 @@
     </div>
     <br><br>
     <div class="LiveDataSection">
-        <h1>Wemos D1 Mini (indoor measurment)</h1>
+        <h1>Wemos D1 Mini (indoor measurement)</h1>
         <div id="LightSensingNodeOut">
             <canvas id="reading1"> </canvas>
             <canvas id="reading2"> </canvas>
-            <canvas id="reading3"> </canvas>      
+            <canvas id="reading3"> </canvas>
+            <p id="LightSensingNodeOutTimestamp"></p>      
         </div>
         <br><br>
-        <h1>AirRohr Esp Node (outdoor measurment)</h1>
+        <h1>AirRohr Esp Node (outdoor measurement)</h1>
         <div id="Rohr">
             <canvas id="RohrReading1"> </canvas>
             <canvas id="RohrReading2"> </canvas>
             <canvas id="RohrReading3"> </canvas>
             <canvas id="RohrReading4"> </canvas>
             <canvas id="RohrReading5"> </canvas>
-            <canvas id="RohrReading6"> </canvas>                  
+            <canvas id="RohrReading6"> </canvas>
+            <p id="RohrTimestamp"></p>                   
         </div>
-    </div>  
+    </div>
+    <br><br>  
+    <div class="HistoricData"> 
+    </div>
     <script src="app.js"></script>
 </body>
 </html>

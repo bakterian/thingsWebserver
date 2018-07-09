@@ -2,6 +2,7 @@
 var config = require('../../CONFIG/thingsWebserverConfig'); //needs adjusting
 var configUtil = require('./configUtil');
 var gauges = require('./gaugeFactory');
+var dbDataReader = require('./dbDataReader');
 var $ = require('jquery');
 // =======================================================================
 
@@ -13,8 +14,6 @@ var activeGauges = [];
 // ============================ FUNCITONS ================================
 function addDistinctCanvasIds(mqttTopic,newCanavasIds)
 {
-    var latestCanvasIds = [];
-
     newCanavasIds.forEach(newCanavasId => {
 
         var foundEntry = false;
@@ -34,7 +33,7 @@ function addDistinctCanvasIds(mqttTopic,newCanavasIds)
 
 function addCanvasIds(mqttTopic)
 {
-    $("#" + mqttTopic).children('canvas').each(function ()   //TODO this could be improved by creating canvases ?
+    $("#" + mqttTopic).children('canvas').each(function () 
     {
         
         var newCanavasIds = [];
@@ -56,7 +55,7 @@ configTopics.forEach(topic =>
     addCanvasIds(topic); 
 });
 
-exports.DrawGauges = function()
+exports.drawGauges = function()
 {
     for(var i =0; i < config.readings.length; i++)
     {
@@ -73,7 +72,7 @@ exports.DrawGauges = function()
 
 exports.updateGauges = function(topic,mqttData)
 {
-    const msgJson = JSON.parse(mqttData.toString());
+    const msgJson = JSON.parse(mqttData);
 
     config.readings.forEach(reading => 
     {
@@ -84,6 +83,33 @@ exports.updateGauges = function(topic,mqttData)
                 (activeGauge.jsonParam === reading.jsonParam))
                 {
                 activeGauge.gauge.update({value: msgJson[reading.jsonParam]});
+                }
+            });
+        }
+    });
+}
+
+exports.updateGaugeTimestamp = function(topic,timestampStr)
+{
+    $("#" + topic + "Timestamp").html("Updated: " + timestampStr);
+}
+
+exports.updateGaugesFromDb = function(topic, dbData)
+{
+    
+    var device =  configUtil.getDeviceId(config,topic);
+    console.log("updating " + device + " gauges based on db data.")
+    config.readings.forEach(reading => 
+    {
+        if(reading.mqttTopic === topic)
+        {
+            activeGauges.forEach(activeGauge => {
+            if((activeGauge.topic === reading.mqttTopic) &&
+                (activeGauge.jsonParam === reading.jsonParam))
+                {
+                    var sensorId = configUtil.getSensorId(config,device,reading.jsonParam);
+                    var sensorReading = dbDataReader.getLastSensorValue(dbData,sensorId);
+                    activeGauge.gauge.update({value: sensorReading});
                 }
             });
         }

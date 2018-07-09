@@ -2,6 +2,7 @@ var config = {};
 
 config.connection = 
 {
+	url: "http://localhost",
 	port: 8080
 };
 
@@ -35,6 +36,67 @@ config.readings =
 		dataType: "temperature",
 	},
 	
+];
+
+config.time = 
+{
+	zone: "TimeZoneMomentJs", 
+	fotmat:"YYYY-MM-DD HH:mm:ss ZZ"
+};
+
+config.dynamoTableName = "MqttShadowData";
+
+config.deviceIdMap =
+[
+	{
+		mqttTopic: "topic1",
+		deviceId: "device1"
+	},
+	{
+		mqttTopic: "topic2",
+		deviceId: "device2"
+	}
+];
+
+config.SensorMap =
+[
+	{
+		deviceId: "device1",
+		sensorGroups : 
+		[		
+			{
+				group: "temperatureGroup",
+				unit: "degrees celsius [°C]",
+				sensors: 
+				[
+					{label: "Temp sensor #1", id: "temperature", jsonParam: "temp" }
+				]
+			},		
+			{
+				group: "humidityGroup",
+				unit: "relative humidity [%]",
+				sensors: 
+				[
+					{label: "Humidity sensor", id: "humidity", jsonParam: "humid" }
+				]
+			}
+		]		
+	},
+	{
+		deviceId: "device2",
+		sensorGroups : 
+		[	
+			{
+				group: "temperature",
+				unit: "degrees celsius [°C]",
+				sensors: 
+				[
+					{label: "Temp sensor #1", id: "temperature", jsonParam: "temperature"},
+					{label: "Temp sensor #2", id: "temperatureV2", jsonParam: "tempV2"}
+				]
+			}	
+		]		
+	}
 ];
 
 module.exports = config;
