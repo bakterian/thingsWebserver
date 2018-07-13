@@ -9,6 +9,7 @@ var $ = require('jquery');
 // ============================ GLOBALS ==================================
 var canvasIds = [];
 var activeGauges = [];
+const gMomentDispFormat = "YYYY-MM-DD HH:mm";
 // =======================================================================
 
 // ============================ FUNCITONS ================================
@@ -89,8 +90,9 @@ exports.updateGauges = function(topic,mqttData)
     });
 }
 
-exports.updateGaugeTimestamp = function(topic,timestampStr)
+exports.updateGaugeTimestamp = function(topic,timestamp)
 {
+    var timestampStr = timestamp.format(gMomentDispFormat);
     $("#" + topic + "Timestamp").html("Updated: " + timestampStr);
 }
 

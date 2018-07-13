@@ -18,3 +18,18 @@ exports.getLastSensorValue = function(data,sensorId)
     var reading = getFloatValue(item[sensorId]);
     return reading;
 }
+
+exports.getLastItemTimestamp = function(data)
+{
+    return data.Items[data.Items.length -1].time.S;
+}
+
+exports.getDeviceId = function(data)
+{
+    return data.Items[0].deviceId.S;
+}
+
+exports.getItemCount = function(data)
+{
+    return data.Items.length;
+}

@@ -14,7 +14,8 @@ config.thingsBroker =
 		"port":3033,
 		"username":"brokerLogin",
 		"password":"brokerPassword",
-		"protocolVersion":4
+		"protocolVersion":4,
+		"reconnectPeriod":0 
 	}
 };
 
