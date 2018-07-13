@@ -1,6 +1,8 @@
 var AWS = require("aws-sdk");
-var config = require('../CONFIG/thingsWebserverConfig'); 
-AWS.config.loadFromPath('../CONFIG/awsCredentials.json'); 
+var config = require('../CONFIG/thingsWebserverConfig');
+var awsCredentials = require('../CONFIG/awsCredentials'); 
+
+AWS.config.update(awsCredentials);
 
 var dynamodb = new AWS.DynamoDB();
 
