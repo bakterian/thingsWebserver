@@ -16,10 +16,6 @@ Object.defineProperty(subRooms, 'add', {
             this.push(roomId);
             console.log("[Server|subRooms] Added new room id: " + roomId);
         }
-        else
-        {
-            console.log("[Server|subRooms] room id already a part of the array");
-        }
     }})
 
 Object.defineProperty(subRooms, 'remove', {
@@ -30,10 +26,6 @@ Object.defineProperty(subRooms, 'remove', {
         {
             console.log("[Server|subRooms] Removing room id: " + roomId);
             this.splice(index,1);        
-        }
-        else
-        {
-            console.log("[Server|subRooms] room id already not part of the room");
         }
     }})
 

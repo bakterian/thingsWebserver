@@ -46,12 +46,9 @@ mqttClient.on('connect', function()
 
 mqttClient.on('message', function (topic, message)
 {
-    console.log("got mqtt data " + message.toString())
     subscribedRooms.forEach(room => {
-        console.log("will emit it to room: " + room)
         io.to(room).emit("newMqttDataFromServer", topic, message.toString()); 
-    });
-    
+    });   
 });
 
 app.use(express.static(__dirname + '/public'));
@@ -67,7 +64,7 @@ io.on('connection',function(client)
   client.on('disconnect', function(){ subscribedRooms.remove = client.id });
   client.on('unsubscribeFromServMqttUpdates', function(){ subscribedRooms.remove = client.id });
   client.on('subscribeForServMqttUpdates', function(){ subscribedRooms.add = client.id });
-  
+
   var timestamp = timeKeeper.getOldDateTime(7); 
   console.log("Fetching db data not older than: " + timestamp);
   var mqttTopics = configUtil.getTopics(config);
