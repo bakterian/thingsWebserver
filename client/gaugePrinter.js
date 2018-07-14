@@ -1,5 +1,5 @@
 // ============================ RESOURCES ================================
-var config = require('../../CONFIG/thingsWebserverConfig'); //needs adjusting
+var config = require('../../CONFIG/thingsWebserverConfig');
 var configUtil = require('./configUtil');
 var gauges = require('./gaugeFactory');
 var dbDataReader = require('./dbDataReader');
