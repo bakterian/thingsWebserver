@@ -8,22 +8,14 @@ var io = require('socket.io')(server);
 var moment = require('moment-timezone');
 var dynamoDbFetcher = require('./dynamoDataFetcher');
 var configUtil = require('./client/configUtil');
+var timeKeeper = require('./client/timeKeeper');
 // =======================================================================
 
 // ============================ GLOBALS ==================================
 var mqttClient = mqtt.connect(config.thingsBroker.url,config.thingsBroker.options);
 var subscribed = false;
+var subscribedRooms = require('./socketIoHelper').roomArray;
 // =======================================================================
-
-function getCurrentDateTime() 
-{
-    return moment().tz(config.time.zone).format(config.time.format);
-}
-
-function getOldDateTime(noPassedDays) 
-{
-    return moment().subtract(noPassedDays, 'day').tz(config.time.zone).format(config.time.format);
-}
 
 function subsribeToTopics()
 {
@@ -54,7 +46,12 @@ mqttClient.on('connect', function()
 
 mqttClient.on('message', function (topic, message)
 {
-    io.emit("newMqttDataFromServer", topic, message.toString());
+    console.log("got mqtt data " + message.toString())
+    subscribedRooms.forEach(room => {
+        console.log("will emit it to room: " + room)
+        io.to(room).emit("newMqttDataFromServer", topic, message.toString()); 
+    });
+    
 });
 
 app.use(express.static(__dirname + '/public'));
@@ -65,10 +62,15 @@ app.get('/',function(request,response)
 });
 
 io.on('connection',function(client)
-{
-  var mqttTopics = configUtil.getTopics(config);
-  var timestamp = getOldDateTime(7); 
+{    
+  subscribedRooms.add = client.id;
+  client.on('disconnect', function(){ subscribedRooms.remove = client.id });
+  client.on('unsubscribeFromServMqttUpdates', function(){ subscribedRooms.remove = client.id });
+  client.on('subscribeForServMqttUpdates', function(){ subscribedRooms.add = client.id });
+  
+  var timestamp = timeKeeper.getOldDateTime(7); 
   console.log("Fetching db data not older than: " + timestamp);
+  var mqttTopics = configUtil.getTopics(config);
   mqttTopics.forEach(topicName => {
     dynamoDbFetcher.getDataNotAlderThan(topicName, timestamp, function(err,data){
         if (err) 
@@ -83,5 +85,6 @@ io.on('connection',function(client)
       });  
   });
 });
+
 
 server.listen(config.connection.port);

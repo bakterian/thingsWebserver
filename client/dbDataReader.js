@@ -12,6 +12,25 @@ var getFloatValue = function(sensorId)
     return sensorReading;
 }
 
+class SensorDbData {
+    constructor(data)
+    {
+        this.dbData = data;
+    }
+    get count() 
+    {
+        return this.dbData.Items.length;
+    }
+    get deviceId() 
+    {
+        return this.dbData.Items[0].deviceId.S;
+    }
+    get lastItemTimesamp()
+    {
+        return this.dbData.Items[this.dbData.Items.length -1].time.S;
+    }
+}
+
 exports.getLastSensorValue = function(data,sensorId)
 {
     var item = data.Items[data.Items.length -1];
@@ -33,3 +52,5 @@ exports.getItemCount = function(data)
 {
     return data.Items.length;
 }
+
+exports.SensorDbData = SensorDbData;

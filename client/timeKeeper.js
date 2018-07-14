@@ -1,7 +1,7 @@
 
 // ============================ RESOURCES ================================
 var moment = require('moment-timezone');
-
+var config = require('../../CONFIG/thingsWebserverConfig');
 // =======================================================================
 
 // ============================ GLOBALS ==================================
@@ -48,4 +48,14 @@ exports.getLastUpdateTime = function(topic)
     });
 
     return timestamp;
+}
+
+exports.getCurrentDateTime = function() 
+{
+    return moment().tz(config.time.zone).format(config.time.format);
+}
+
+exports.getOldDateTime = function(noPassedDays) 
+{
+    return moment().subtract(noPassedDays, 'day').tz(config.time.zone).format(config.time.format);
 }

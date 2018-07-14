@@ -14,7 +14,6 @@ var dbDataReader = require('./dbDataReader');
 var mqttClient = mqtt.connect(config.thingsBroker.url,config.thingsBroker.options);
 var socket = io.connect(config.connection.url + ":" + config.connection.port);
 var subscribed = false;
-var gMqttServFallbackActive = true;
 var drawnDevices = [];
 // =======================================================================
 
@@ -41,12 +40,18 @@ function subsribeToTopics()
 mqttClient.on('connect', function()
 {
     console.log("Connected to Mqtt Broker, will be using browser websocket for acquering mqtt data.");
-    gMqttServFallbackActive = false;
+    socket.emit('unsubscribeFromServMqttUpdates');
 	if(subscribed != true)
 	{
 		subsribeToTopics();
 		subscribed = true;
 	}
+});
+
+socket.on("connect", function()
+{
+    console.log("socket connection established");
+
 });
 
 mqttClient.on('message', function (topic, message)
@@ -57,29 +62,31 @@ mqttClient.on('message', function (topic, message)
     var timestamp = moment().tz(config.time.zone);
     timeKeeper.updateLastTimestampList(topic, timestamp);
     gaugePrinter.updateGaugeTimestamp(topic,timestamp);
+    chartPrinter.updateChartsLiveData(topic,message); //TODO unit/integration test this!
 });
 
 mqttClient.on('error', function(err) 
 {
     console.log("Mqtt client connection issue, will use mqtt data from srv: " + err);
-    gMqttServFallbackActive = true;
+    socket.emit('subscribeForServMqttUpdates');
 });
 
 mqttClient.stream.on('error', () => {
-    console.log("Mqtt stream error was captured, closing connection.");
-    gMqttServFallbackActive = true;
+    console.log("Mqtt stream error was captured, closing connection and will use mqtt data from srv.");
+    socket.emit('subscribeForServMqttUpdates');
     mqttClient.end();});
 
 socket.on('chartDataBundleReady', function(data)
 {
     console.log("received db data");
-    //TODO create dbDeviceInfo class and call getters like  deviceId, itemsCount, lastItemTimestamp
-    if((dbDataReader.getItemCount(data) > 0)) 
+    var sensorData = new dbDataReader.SensorDbData(data);
+    console.log("sensorData.deviceId: " + sensorData.deviceId);
+    if((sensorData.count > 0)) 
     {
-        var deviceId = dbDataReader.getDeviceId(data); //TODO unit test the getDeviceId method
+        var deviceId = sensorData.deviceId; //TODO unit test the getDeviceId method
         var topic = configUtil.getTopic(config, deviceId); 
         var lastUpdateTime = timeKeeper.getLastUpdateTime(topic);
-        var lastItemTimestamp = moment(dbDataReader.getLastItemTimestamp(data));
+        var lastItemTimestamp = moment(sensorData.lastItemTimesamp);
         if(lastItemTimestamp.isAfter(lastUpdateTime))
         {
             timeKeeper.updateLastTimestampList(topic, lastItemTimestamp);
@@ -99,16 +106,14 @@ socket.on('newMqttDataFromServer', function(topic,message)
     var receivedData = topic.toString() + ": " + message;
     console.log("[newMqttDataFromServer] " + receivedData);
     //TASK: handle case when there was no updates for more than one hour (request read from db OR server notices a ping from socket io )
-    if(gMqttServFallbackActive)
-    {
-        var timestamp = moment().tz(config.time.zone);
-        timeKeeper.updateLastTimestampList(topic, timestamp);
-        gaugePrinter.updateGaugeTimestamp(topic,timestamp);
-        gaugePrinter.updateGauges(topic,message); 
-    }  
-    chartPrinter.updateChartsLiveData(topic,message); //TODO unit/integration test this!
+    var timestamp = moment().tz(config.time.zone);
+    timeKeeper.updateLastTimestampList(topic, timestamp);
+    gaugePrinter.updateGaugeTimestamp(topic,timestamp);
+    gaugePrinter.updateGauges(topic,message); 
+    chartPrinter.updateChartsLiveData(topic,message); //TODO unit/integration test this! 
 });
 
 window.onload = function() {
     gaugePrinter.drawGauges(); 
+
 };
