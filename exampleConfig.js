@@ -17,7 +17,7 @@ config.thingsBroker =
 			"username":"brokerLogin",
 			"password":"brokerPassword",
 			"protocolVersion":4,
-			"reconnectPeriod":0 
+			"reconnectPeriod":60000 
 		}
 	},
 	http:
