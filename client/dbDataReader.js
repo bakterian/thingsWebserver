@@ -17,6 +17,10 @@ class SensorDbData {
     {
         this.dbData = data;
     }
+    get items()
+    {
+        return this.dbData.Items;
+    }
     get count() 
     {
         return this.dbData.Items.length;
@@ -28,6 +32,12 @@ class SensorDbData {
     get lastItemTimesamp()
     {
         return this.dbData.Items[this.dbData.Items.length -1].time.S;
+    }
+    getLastSensorValue(sensorId)
+    {
+        var item = this.dbData.Items[this.dbData.Items.length -1];
+        var reading = getFloatValue(item[sensorId]);
+        return reading;
     }
 }
 

@@ -8,14 +8,29 @@ config.connection =
 
 config.thingsBroker =
 {
-	url: "broker URL",
-	options: 
+	ws : 
 	{
-		"port":3033,
-		"username":"brokerLogin",
-		"password":"brokerPassword",
-		"protocolVersion":4,
-		"reconnectPeriod":0 
+		url: "websocket broker URL",
+		options: 
+		{
+			"port":3033,
+			"username":"brokerLogin",
+			"password":"brokerPassword",
+			"protocolVersion":4,
+			"reconnectPeriod":0 
+		}
+	},
+	http:
+	{
+		url: "http broker url",
+		options: 
+		{
+			"port":1883,
+			"username":"brokerLogin",
+			"password":"brokerPassword",
+			"protocolVersion":4,
+			"reconnectPeriod":10000 
+		}
 	}
 };
 
