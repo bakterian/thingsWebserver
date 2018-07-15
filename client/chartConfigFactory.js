@@ -109,8 +109,20 @@ exports.addChartDataset = function(chartConfig, dynamoDataPairs, seriesLabel)
         borderColor: color,
         data: dynamoDataPairs
     };
-
+    
     chartConfig.data.datasets.push(newDataset);
 }
 
+exports.updateChartDataset = function(chartConfig, dynamoDataPairs, seriesLabel)
+{
+    var index = -1;
+    for(var i=0; i <chartConfig.data.datasets.length; i++ )
+    {
+        if(chartConfig.data.datasets[i].label === seriesLabel) index = i;
+    } 
+    if(index != -1)
+    {
+        chartConfig.data.datasets[index].data = dynamoDataPairs;
+    }
+}
 // =======================================================================

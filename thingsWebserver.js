@@ -12,7 +12,7 @@ var timeKeeper = require('./client/timeKeeper');
 // =======================================================================
 
 // ============================ GLOBALS ==================================
-var mqttClient = mqtt.connect(config.thingsBroker.url,config.thingsBroker.options);
+var mqttClient = mqtt.connect(config.thingsBroker.http.url,config.thingsBroker.http.options);
 var subscribed = false;
 var subscribedRooms = require('./socketIoHelper').roomArray;
 // =======================================================================
@@ -60,7 +60,6 @@ app.get('/',function(request,response)
 
 io.on('connection',function(client)
 {    
-  subscribedRooms.add = client.id;
   client.on('disconnect', function(){ subscribedRooms.remove = client.id });
   client.on('unsubscribeFromServMqttUpdates', function(){ subscribedRooms.remove = client.id });
   client.on('subscribeForServMqttUpdates', function(){ subscribedRooms.add = client.id });

@@ -6,6 +6,7 @@ var ChartZoom = require('chartjs-plugin-zoom');
 var moment = require('moment-timezone');
 var config = require('../../CONFIG/thingsWebserverConfig');
 var $ = require('jquery');
+var dbDataReader = require('./dbDataReader');
 // =======================================================================
 
 // ============================ GLOBALS ==================================
@@ -128,7 +129,7 @@ var persistChartRef = function(dId,senGroup, chartToPersist)
     ids = getlastHourlyValIds(dId, "none", senGroup);
     if((ids.devArrayId != -1) && (ids.sensorGroupArrayId != -1))
     {
-            glastHourlyValues[ids.devArrayId].sensorGroups[ids.sensorGroupArrayId].chart = chartToPersist;
+        glastHourlyValues[ids.devArrayId].sensorGroups[ids.sensorGroupArrayId].chart = chartToPersist;
     }
     else
     {
@@ -136,6 +137,17 @@ var persistChartRef = function(dId,senGroup, chartToPersist)
     }
 }
 
+var getChart = function(lastHourlyVal,senGroupId)
+{
+    var chart;
+    lastHourlyVal.sensorGroups.forEach(sensorGroup => {
+        if(sensorGroup.group === senGroupId )
+        {
+            chart = sensorGroup.chart;
+        }        
+    });
+    return chart;
+}
 
 var getLastHourValue = function(did)
 {
@@ -193,7 +205,7 @@ var getTimeValueMap = function(data)
     return timeValueMap;
 }
 
-var getHourlyAvg = function(data, sensorId)
+var getHourlyAvg = function(sensorData, sensorId)
 {
     var result = 
     {
@@ -203,19 +215,19 @@ var getHourlyAvg = function(data, sensorId)
         lastAvgValue : {}
     }
 
-    if(data.Items.length > 0)
+    if(sensorData.count > 0)
     {
-        var hourlyBase = parseInt(moment(data.Items[0].time.S, config.time.format).format("HH"));
-        var hourlyBaseTime = trimSecondsAndMinutes(data.Items[0].time.S);
+        var hourlyBase = parseInt(moment(sensorData.items[0].time.S, config.time.format).format("HH"));
+        var hourlyBaseTime = trimSecondsAndMinutes(sensorData.items[0].time.S);
         var valueAccumulator = 0.0;
         var avgValCounter = 0.0;
-        for(var i = 0; i < data.Items.length; i++)
+        for(var i = 0; i < sensorData.count; i++)
         {
-            var item = data.Items[i];
+            var item = sensorData.items[i];
             var readVal = getSensorValue(item[sensorId]);
             valueAccumulator += readVal;
             avgValCounter++;
-            if((parseInt(moment(item.time.S, config.time.format).format("HH")) != hourlyBase) || (i == data.Items.length-1))
+            if((parseInt(moment(item.time.S, config.time.format).format("HH")) != hourlyBase) || (i == sensorData.count-1))
             {
                 var avgValue = getAvgValue(valueAccumulator,avgValCounter);
                 var avgValueMapItem = {t: hourlyBaseTime, y: avgValue};
@@ -234,27 +246,36 @@ var getHourlyAvg = function(data, sensorId)
     return result;
 } 
 
-var prependCanvasData = function(data)
+var isCanvasDataPresent = function(deviceId)
 {
-    var chartCount = getChartCountForDevice(data.Items[0].deviceId.S);
+    var canvasDataPresent = false;
+    $("#" + deviceId + "Hist").children('canvas').each(function () 
+    {
+        canvasDataPresent = true;
+    });
+    return canvasDataPresent;
+}
+var prependCanvasData = function(deviceId)
+{
+    var chartCount = getChartCountForDevice(deviceId);
 
-    $(".HistoricData").prepend("<h1>Averaged " + data.Items[0].deviceId.S + " measurements - last 7 days</h1><div id=\"" + data.Items[0].deviceId.S +"Hist\"></div><br><br>");
+    $(".HistoricData").prepend("<h1>Averaged " + deviceId + " measurements - last 7 days</h1><div id=\"" + deviceId +"Hist\"></div><br><br>");
 
     for(var i =0; i< chartCount; i++)
     {
-        $("#" + data.Items[0].deviceId.S +"Hist")
-        .append("<canvas id=\"chart" + data.Items[0].deviceId.S + i + "\" class=\"chartjs-render-monitor\"></canvas>");
+        $("#" + deviceId +"Hist")
+        .append("<canvas id=\"chart" + deviceId + i + "\" class=\"chartjs-render-monitor\"></canvas>");
     }
 }
 
-var getChartCanvasIds = function(data)
+var getChartCanvasIds = function(deviceId)
 {
     var charCanvasIds = [];
-    var reqChartCount = getChartCountForDevice(data.Items[0].deviceId.S);
+    var reqChartCount = getChartCountForDevice(deviceId);
     if( reqChartCount != -1)
     {
         var ids = []
-        $("#" + data.Items[0].deviceId.S + "Hist").children('canvas').each(function () 
+        $("#" + deviceId + "Hist").children('canvas').each(function () 
         {  
             ids[ids.length] = $(this).attr('id');
         });
@@ -270,39 +291,75 @@ var getChartCanvasIds = function(data)
     }
     else
     {
-        Console.log("Was Unable to retrieve chart count for device " + data.Items[0].deviceId.S);
+        Console.log("Was Unable to retrieve chart count for device " + deviceId);
     } 
     
     return charCanvasIds;
 }
 
-exports.drawCharts = function(data) 
+var addNewCharts = function(sensorData, device, chartCanvasIds)
 {
-    prependCanvasData(data);
-    var chartCanvasIds = getChartCanvasIds(data);
     var i = 0;
+    device.sensorGroups.forEach(sensorGroup => 
+    {
+        var chartConfig = configFactory.createChartConfig(sensorGroup.unit);
+        sensorGroup.sensors.forEach(sensor => 
+        {
+            var hourlyAvgDataPkg = getHourlyAvg(sensorData,sensor.id);
+            updadteLastHourlyValues(sensorData.deviceId, sensor.id, sensor.jsonParam, sensorGroup.group, hourlyAvgDataPkg);
+            configFactory.addChartDataset(chartConfig,hourlyAvgDataPkg.avgValueMap,sensor.label);
+        });  
+        var chartCanvas = document.getElementById(chartCanvasIds[i]).getContext('2d');
+        var newChart = new Chart(chartCanvas, chartConfig);
+        window.myLine = newChart;
+        persistChartRef(sensorData.deviceId, sensorGroup.group, newChart);
+        i++;
+    });
+}
+
+var updateChartDatasets = function(sensorData, device, chartCanvasIds)
+{
+    var lastHourlyVal = getLastHourValue(sensorData.deviceId);
+    device.sensorGroups.forEach(sensorGroup => 
+    {
+        var chartConfig = getChart(lastHourlyVal,sensorGroup.group);
+        sensorGroup.sensors.forEach(sensor => 
+        {
+            var hourlyAvgDataPkg = getHourlyAvg(sensorData,sensor.id);
+            updadteLastHourlyValues(sensorData.deviceId, sensor.id, sensor.jsonParam, sensorGroup.group, hourlyAvgDataPkg);
+            configFactory.updateChartDataset(chartConfig,hourlyAvgDataPkg.avgValueMap,sensor.label);
+        });  
+    });
+}
+
+var drawCanvases = function(sensorData, drawChart)
+{
+    var chartCanvasIds = getChartCanvasIds(sensorData.deviceId);
     if(chartCanvasIds.length > 0)
     {
         config.SensorMap.forEach(device => {
-            if(device.deviceId == data.Items[0].deviceId.S)
+            if(device.deviceId == sensorData.deviceId)
             {
-                device.sensorGroups.forEach(sensorGroup => 
-                {
-                    var chartConfig = configFactory.createChartConfig(sensorGroup.unit);
-                    sensorGroup.sensors.forEach(sensor => 
-                    {
-                        var hourlyAvgDataPkg = getHourlyAvg(data,sensor.id);
-                        updadteLastHourlyValues(data.Items[0].deviceId.S, sensor.id, sensor.jsonParam, sensorGroup.group, hourlyAvgDataPkg);
-                        configFactory.addChartDataset(chartConfig,hourlyAvgDataPkg.avgValueMap,sensor.label);
-                    });  
-                    var chartCanvas = document.getElementById(chartCanvasIds[i]).getContext('2d');
-                    var newChart = new Chart(chartCanvas, chartConfig);
-                    window.myLine = newChart;
-                    persistChartRef(data.Items[0].deviceId.S, sensorGroup.group, newChart);
-                    i++;
-                });
+                drawChart(sensorData, device, chartCanvasIds);
             }
         });
+    }
+}
+
+exports.drawCharts = function(data) 
+{
+    var sensorData = new dbDataReader.SensorDbData(data);
+
+    if(isCanvasDataPresent(sensorData.deviceId) === false)
+    {
+        console.log("adding charts");
+        prependCanvasData(sensorData.deviceId);
+        drawCanvases(sensorData,addNewCharts)
+    }
+    else
+    {    
+        console.log("updating charts");
+        drawCanvases(sensorData,updateChartDatasets)
     }
 };
 

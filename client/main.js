@@ -11,13 +11,20 @@ var dbDataReader = require('./dbDataReader');
 // =======================================================================
 
 // ============================ GLOBALS ==================================
-var mqttClient = mqtt.connect(config.thingsBroker.url,config.thingsBroker.options);
+var mqttClient = mqtt.connect(config.thingsBroker.ws.url,config.thingsBroker.ws.options);
 var socket = io.connect(config.connection.url + ":" + config.connection.port);
 var subscribed = false;
-var drawnDevices = [];
 // =======================================================================
 
 timeKeeper.Init(configUtil.getTopics(config));
+
+function handleMqttConError(errorMsg)
+{
+    console.log("Following mqtt error was captured: " + errorMsg);
+    console.log("Closing connection, will use mqtt data from srv.");
+    socket.emit('subscribeForServMqttUpdates');
+    mqttClient.end();
+}
 
 function subsribeToTopics()
 {
@@ -51,7 +58,15 @@ mqttClient.on('connect', function()
 socket.on("connect", function()
 {
     console.log("socket connection established");
-
+    if(!mqttClient.connected)
+    {
+        socket.emit('subscribeForServMqttUpdates'); //subscribing already as not all connection exceptions are captured
+    }
+    if(mqttClient.disconnected)
+    {
+        console.log("Mqtt client is disconnected will try to reconnect this guy");
+        mqttClient = mqtt.connect(config.thingsBroker.ws.url,config.thingsBroker.ws.options);
+    }
 });
 
 mqttClient.on('message', function (topic, message)
@@ -65,16 +80,13 @@ mqttClient.on('message', function (topic, message)
     chartPrinter.updateChartsLiveData(topic,message); //TODO unit/integration test this!
 });
 
-mqttClient.on('error', function(err) 
-{
-    console.log("Mqtt client connection issue, will use mqtt data from srv: " + err);
-    socket.emit('subscribeForServMqttUpdates');
+mqttClient.on('error', function(err) {
+    handleMqttConError(err);
 });
 
 mqttClient.stream.on('error', () => {
-    console.log("Mqtt stream error was captured, closing connection and will use mqtt data from srv.");
-    socket.emit('subscribeForServMqttUpdates');
-    mqttClient.end();});
+    handleMqttConError("Stream Error!!!");
+});
 
 socket.on('chartDataBundleReady', function(data)
 {
@@ -91,21 +103,16 @@ socket.on('chartDataBundleReady', function(data)
         {
             timeKeeper.updateLastTimestampList(topic, lastItemTimestamp);
             gaugePrinter.updateGaugeTimestamp(topic,lastItemTimestamp);
-            gaugePrinter.updateGaugesFromDb(topic, data);
+            gaugePrinter.updateGaugesFromDb(topic, sensorData);
         }
-        if((drawnDevices.includes(deviceId) === false))
-        {
-            drawnDevices.push(deviceId);        
-            chartPrinter.drawCharts(data);
-        }
+        chartPrinter.drawCharts(data);
     }
 });
 
 socket.on('newMqttDataFromServer', function(topic,message)
 {   
     var receivedData = topic.toString() + ": " + message;
-    console.log("[newMqttDataFromServer] " + receivedData);
-    //TASK: handle case when there was no updates for more than one hour (request read from db OR server notices a ping from socket io )
+    console.log("[io|newMqttDataFromServer] " + receivedData);
     var timestamp = moment().tz(config.time.zone);
     timeKeeper.updateLastTimestampList(topic, timestamp);
     gaugePrinter.updateGaugeTimestamp(topic,timestamp);

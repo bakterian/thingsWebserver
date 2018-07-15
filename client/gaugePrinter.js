@@ -96,9 +96,8 @@ exports.updateGaugeTimestamp = function(topic,timestamp)
     $("#" + topic + "Timestamp").html("Updated: " + timestampStr);
 }
 
-exports.updateGaugesFromDb = function(topic, dbData)
-{
-    
+exports.updateGaugesFromDb = function(topic, sensorData)
+{ 
     var device =  configUtil.getDeviceId(config,topic);
     console.log("updating " + device + " gauges based on db data.")
     config.readings.forEach(reading => 
@@ -110,7 +109,7 @@ exports.updateGaugesFromDb = function(topic, dbData)
                 (activeGauge.jsonParam === reading.jsonParam))
                 {
                     var sensorId = configUtil.getSensorId(config,device,reading.jsonParam);
-                    var sensorReading = dbDataReader.getLastSensorValue(dbData,sensorId);
+                    var sensorReading = sensorData.getLastSensorValue(sensorId);
                     activeGauge.gauge.update({value: sensorReading});
                 }
             });
