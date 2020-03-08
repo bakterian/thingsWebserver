@@ -224,9 +224,17 @@ var getHourlyAvg = function(sensorData, sensorId)
         for(var i = 0; i < sensorData.count; i++)
         {
             var item = sensorData.items[i];
-            var readVal = getSensorValue(item[sensorId]);
-            valueAccumulator += readVal;
-            avgValCounter++;
+            if(item[sensorId] == null)
+	    {
+		console.log("The Senor value is not present in db data item" + sensorId);
+	    }
+	    else
+	    {
+	    	var readVal = getSensorValue(item[sensorId]);
+            	valueAccumulator += readVal;
+            	avgValCounter++;
+	    }
+
             if((parseInt(moment(item.time.S, config.time.format).format("HH")) != hourlyBase) || (i == sensorData.count-1))
             {
                 var avgValue = getAvgValue(valueAccumulator,avgValCounter);
