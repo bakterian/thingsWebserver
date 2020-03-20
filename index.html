@@ -44,7 +44,7 @@
         margin-right: 40px;
     }
 
-    #Rohr, #LightSensingNodeOut, #AirRohrHist, #WemosD1Hist
+    #Rohr, #LightSensingNodeOut, #wemos_nodes-devices-wemos_node_uno-up, #AirRohrHist, #WemosD1Hist, #wemos_node_unoHist
     {
         margin: 10px;
         border:10px solid #bdbdbd;
@@ -72,7 +72,7 @@
         padding-right: 0px;
         margin-top: 15px;
     }
-    #LightSensingNodeOutTimestamp, #RohrTimestamp
+    #LightSensingNodeOutTimestamp, #RohrTimestamp, #wemos_nodes-devices-wemos_node_uno-upTimestamp
     {
         text-align: right;
         color: grey;
@@ -88,14 +88,6 @@
     </div>
     <br><br>
     <div class="LiveDataSection">
-        <h1>Wemos D1 Mini (indoor measurement)</h1>
-        <div id="LightSensingNodeOut">
-            <canvas id="reading1"> </canvas>
-            <canvas id="reading2"> </canvas>
-            <canvas id="reading3"> </canvas>
-            <p id="LightSensingNodeOutTimestamp"></p>      
-        </div>
-        <br><br>
         <h1>AirRohr Esp Node (outdoor measurement)</h1>
         <div id="Rohr">
             <canvas id="RohrReading1"> </canvas>
@@ -105,6 +97,22 @@
             <canvas id="RohrReading5"> </canvas>
             <canvas id="RohrReading6"> </canvas>
             <p id="RohrTimestamp"></p>                   
+        </div>
+	<br><br>
+	<h1>Wemos D1 Mini (indoor measurement)</h1>
+        <div id="LightSensingNodeOut">
+            <canvas id="reading1"> </canvas>
+            <canvas id="reading2"> </canvas>
+            <canvas id="reading3"> </canvas>
+            <p id="LightSensingNodeOutTimestamp"></p>      
+        </div>
+        <br><br>
+ 	<h1>TTN Node Uno (indoor measurement)</h1>
+	<div id="wemos_nodes-devices-wemos_node_uno-up">
+            <canvas id="UnoReading1"> </canvas>
+            <canvas id="UnoReading2"> </canvas>
+            <canvas id="UnoReading3"> </canvas>
+            <p id="wemos_nodes-devices-wemos_node_uno-upTimestamp"></p>      
         </div>
     </div>
     <br><br>  

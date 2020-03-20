@@ -299,7 +299,7 @@ var getChartCanvasIds = function(deviceId)
     }
     else
     {
-        Console.log("Was Unable to retrieve chart count for device " + deviceId);
+        console.log("Was Unable to retrieve chart count for device " + deviceId);
     } 
     
     return charCanvasIds;

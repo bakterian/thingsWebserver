@@ -13,6 +13,13 @@ const gMomentDispFormat = "YYYY-MM-DD HH:mm";
 // =======================================================================
 
 // ============================ FUNCITONS ================================
+
+function getValidHtmlId(str)
+{
+    //replacing any invalid HTML 4 character with a dot
+    return str.replace(/\//g,"-");
+}
+
 function addDistinctCanvasIds(mqttTopic,newCanavasIds)
 {
     newCanavasIds.forEach(newCanavasId => {
@@ -34,7 +41,10 @@ function addDistinctCanvasIds(mqttTopic,newCanavasIds)
 
 function addCanvasIds(mqttTopic)
 {
-    $("#" + mqttTopic).children('canvas').each(function () 
+    //some mqtt topic have nasty invalid htnl chars which need to be replaced. 
+    //Same approach must be applied by hand in index.html
+    var validCanvasIdStr = getValidHtmlId(mqttTopic); 
+    $("#" + validCanvasIdStr).children('canvas').each(function () 
     {
         
         var newCanavasIds = [];
@@ -92,8 +102,9 @@ exports.updateGauges = function(topic,mqttData)
 
 exports.updateGaugeTimestamp = function(topic,timestamp)
 {
+    var validTopicIdStr = getValidHtmlId(topic);   
     var timestampStr = timestamp.format(gMomentDispFormat);
-    $("#" + topic + "Timestamp").html("Updated: " + timestampStr);
+    $("#" + validTopicIdStr + "Timestamp").html("Updated: " + timestampStr);
 }
 
 exports.updateGaugesFromDb = function(topic, sensorData)
