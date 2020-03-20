@@ -21,7 +21,9 @@
     "moment-timezone": "^0.5.21",
     "mqtt": "^2.18.0",
     "socket.io": "^2.1.1",
-    "uws": "^10.148.1"
+    "socket.io-client": "0.0.0",
+    "uws": "^10.148.1",
+    "browserify": "^16.2.2"
   },
   "devDependencies": {
     "browserify": "^16.2.2",

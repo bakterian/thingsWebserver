@@ -90,12 +90,12 @@ mqttClient.stream.on('error', () => {
 
 socket.on('chartDataBundleReady', function(data)
 {
-    console.log("received db data");
-    var sensorData = new dbDataReader.SensorDbData(data);
-    console.log("sensorData.deviceId: " + sensorData.deviceId);
+    var sensorData = new dbDataReader.SensorDbData(data); 
+    console.log("received db data, a total of " + sensorData.count + " items.");
     if((sensorData.count > 0)) 
-    {
-        var deviceId = sensorData.deviceId; //TODO unit test the getDeviceId method
+    { 
+    	console.log("sensorData.deviceId: " + sensorData.deviceId);
+	var deviceId = sensorData.deviceId; //TODO unit test the getDeviceId method
         var topic = configUtil.getTopic(config, deviceId); 
         var lastUpdateTime = timeKeeper.getLastUpdateTime(topic);
         var lastItemTimestamp = moment(sensorData.lastItemTimesamp);
